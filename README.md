@@ -4,7 +4,7 @@ This repository contains the source code for the following paper:
 
 [**Versatile Behavior Diffusion for Generalized Traffic Simulation**](https://arxiv.org/abs/2404.02524)
 
-[Zhiyu Huang](https://mczhi.github.io/)<sup>1,\*</sup>, [Zixu Zhang](https://zzx9636.github.io/)<sup>2,\*</sup>, [Ameya Vaidya](https://scholar.google.com/citations?user=TWo54ggAAAAJ&hl=en)<sup>2</sup>, [Yuxiao Chen](https://research.nvidia.com/person/yuxiao-chen)<sup>3</sup>, [Chen Lv](https://lvchen.wixsite.com/automan)<sup>1</sup>, and [Jaime Fernández Fisac](https://ece.princeton.edu/people/jaime-fernandez-fisac)<sup>2</sup>,
+[Zhiyu Huang](https://mczhi.github.io/)<sup>1,\*</sup>, [Zixu Zhang](https://zzx9636.github.io/)<sup>2,\*</sup>, [Ameya Vaidya](https://scholar.google.com/citations?user=TWo54ggAAAAJ&hl=en)<sup>2</sup>, [Yuxiao Chen](https://research.nvidia.com/person/yuxiao-chen)<sup>3</sup>, [Chen Lv](https://lvchen.wixsite.com/automan)<sup>1</sup>, and [Jaime Fernández Fisac](https://ece.princeton.edu/people/jaime-fernandez-fisac)<sup>2</sup>
 
 <sup>1</sup> Nanyang Technological University, <sup>2</sup> Princeton University, <sup>3</sup> NVIDIA Research
 
