@@ -5,6 +5,6 @@ setup(
     version='1.0.0',
     author='Zhiyu Huang and Zixu Zhang ',
     author_email='zixuz@princeton.edu',
-    description='Code for Versatile Scene-Consistent Traffic Scenario Generation as Optimization with Diffusion',
+    description='Code for Versatile Behavior Diffusion for Generalized Traffic Agent Simulation',
     packages=find_packages(exclude=['examples']),
 )
