@@ -1,8 +1,8 @@
 model_name: VBD
 
 # Data Config
-train_data_path: /home/zhiyu/Projects/Project12/release/VBD/data/processed
-val_data_path: /home/zhiyu/Projects/Project12/release/VBD/data/processed
+train_data_path: null
+val_data_path: null
 anchor_path: ./vbd/data/cluster_64_center_dict.pkl
 log_dir: ./train_log
 
