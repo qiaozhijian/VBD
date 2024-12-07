@@ -1,4 +1,4 @@
-name: waymax
+name: vbd
 channels:
   - pytorch
   - nvidia
