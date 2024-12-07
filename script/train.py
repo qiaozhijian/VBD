@@ -11,13 +11,12 @@ tf.config.set_visible_devices([], "GPU")
 import jax
 jax.config.update("jax_platform_name", "cpu")
 
-from vbd.data.dataset import WaymaxDataset, WaymaxTestDataset
+from vbd.data.dataset import WaymaxDataset
 from vbd.model.VBD import VBD
-from vbd.model.VAE import VAE
 from torch.utils.data import DataLoader
 
 import lightning.pytorch as pl
-from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor, StochasticWeightAveraging
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 from lightning.pytorch.loggers import WandbLogger, CSVLogger
 from lightning.pytorch.strategies import DDPStrategy
 
@@ -33,7 +32,7 @@ def load_config(file_path):
 def train(cfg):
     print("Start Training")
     
-    #pl.seed_everything(42)
+    pl.seed_everything(cfg["seed"])
     torch.set_float32_matmul_precision("high")    
         
     # create dataset
@@ -76,20 +75,10 @@ def train(cfg):
     with open(f"{output_path}/config.yaml", "w") as file:
         yaml.dump(cfg, file)
     
-    
     num_gpus = torch.cuda.device_count()
     print("Total GPUS:", num_gpus)
-    
-    task = cfg.get("task", "VBD")
-    if task == "VAE":
-        print("Build VAE Model")
-        model = VAE(cfg=cfg)
-    elif task == "VBD":
-        print("Build VBD Model")
-        model = VBD(cfg=cfg)
-    else:
-        raise ValueError(f"Task {task} not supported")
-    
+    model = VBD(cfg=cfg)
+
     ckpt_path = cfg.get("ckpt_path", None)
     if ckpt_path is not None:
         print("Load Weights from ", ckpt_path)
@@ -138,7 +127,7 @@ def train(cfg):
         enable_model_summary=True,
         detect_anomaly=False,
         gradient_clip_val=1.0,  
-        gradient_clip_algorithm="value", #"norm",
+        gradient_clip_algorithm="norm",
         num_sanity_val_steps=0,
         precision="bf16-mixed",
         log_every_n_steps=100,
@@ -153,8 +142,7 @@ def train(cfg):
                 every_n_epochs=1,
                 save_on_train_epoch_end=False,
             ),
-            LearningRateMonitor(logging_interval="step"),
-            # StochasticWeightAveraging(swa_lrs=1e-2),
+            LearningRateMonitor(logging_interval="step")
         ]
     )
     print("Build Trainer")
@@ -183,7 +171,6 @@ def build_parser():
     parser.add_argument("-clamp", "--clamp_value", type=float, default=None)
     parser.add_argument("-init", "--init_from", type=str, default=None)
     parser.add_argument("-encoder", "--encoder_ckpt", type=str, default=None)
-    parser.add_argument("-task", "--task", type=str, default=None)
     parser.add_argument("-nN", "--num_nodes", type=int, default=1)
     parser.add_argument("-nG", "--num_gpus", type=int, default=-1)
     parser.add_argument("-sType", "--schedule_type", type=str, default=None)
@@ -195,8 +182,6 @@ def build_parser():
     parser.add_argument("-pred", "--with_predictor", type=bool, default=None)
     parser.add_argument("-type", "--prediction_type", type=str, default=None)
     
-    
-
     return parser
     
 def load_cfg(args):

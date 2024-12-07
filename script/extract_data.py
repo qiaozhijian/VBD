@@ -8,6 +8,7 @@ import tensorflow as tf
 tf.config.set_visible_devices([], 'GPU')
 import jax
 jax.config.update('jax_platform_name', 'cpu')
+
 import glob
 import argparse
 import pickle
@@ -78,7 +79,6 @@ def data_process(
                 data_dict['scenario_raw'] = scenario
             
         data_dict['scenario_id'] = scenario_id
-        
 
         with open(scenario_filename, 'wb') as f:
             pickle.dump(data_dict, f)
@@ -89,7 +89,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, default='/data/Dataset/Waymo/V1_2_tf')
     parser.add_argument('--save_dir', type=str, default='/data/Dataset/Waymo/VBD')
-    parser.add_argument('--dataset', type=str, default='all')
     parser.add_argument('--save_raw', action='store_true')
     parser.add_argument('--only_raw', action='store_true')
     parser.add_argument('--num_workers', type=int, default=16)
@@ -99,7 +98,7 @@ if __name__ == '__main__':
     
     print(f'Processing data from {args.data_dir} and Saving to {args.save_dir}')
     
-    def process(dataset, save_raw=False, only_raw=False):
+    def process(save_raw=False, only_raw=False):
         """
         Process a specific dataset and save the processed data.
 
@@ -107,33 +106,25 @@ if __name__ == '__main__':
             dataset (str): Name of the dataset to process.
             save_raw (bool, optional): Whether to save the raw scenario data. Defaults to False.
         """
-        data_path = os.path.join(args.data_dir, dataset+'/*')
-        data_files = glob.glob(data_path)
+        data_files = glob.glob(args.data_dir+'/*')
         if args.only_raw:
-            save_dir = os.path.join(args.save_dir, dataset+'_extracted')
+            save_dir = os.path.join(args.save_dir, 'extracted')
         else:
-            save_dir = os.path.join(args.save_dir, dataset+'_processed')
+            save_dir = os.path.join(args.save_dir, 'processed')
+            
         n_files = len(data_files)
-        print(f'Processing {n_files} files in {data_path} dataset')
+        print(f'Processing {n_files} files in {args.data_dir}')
         os.makedirs(save_dir, exist_ok=True)
         print(f'Saving to {save_dir}')
+
         data_process_partial = functools.partial(
             data_process, 
             save_dir=save_dir,
             save_raw=save_raw,
             only_raw=only_raw,
         )
-        _ = process_map(data_process_partial, data_files, max_workers=args.num_workers)
+        process_map(data_process_partial, data_files, max_workers=args.num_workers)
         
-            
-    if args.dataset == 'all' or args.dataset == 'train':
-        process('training', save_raw=args.save_raw, only_raw=args.only_raw)
-            
-    if args.dataset == 'all' or args.dataset == 'val':
-        process('validation', save_raw=args.save_raw, only_raw=args.only_raw)
-        
-    if args.dataset == 'all' or args.dataset == 'val_interactive':
-        process('validation_interactive', save_raw=args.save_raw, only_raw=args.only_raw)
-    
-    
+    process(save_raw=args.save_raw, only_raw=args.only_raw)
+  
             

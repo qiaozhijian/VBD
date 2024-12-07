@@ -9,6 +9,7 @@ from .data_utils import *
 import functools
 import pickle
 
+
 class WaymaxDataset(Dataset):
     """
     Dataset class for Waymax data.
@@ -23,8 +24,7 @@ class WaymaxDataset(Dataset):
         data_dir,
         anchor_path = "data/cluster_64_center_dict.pkl",
     ):
-        self.data_list = glob.glob(data_dir+'/*')
-        print(f"Found {len(self.data_list)} scenarios")
+        self.data_list = glob.glob(data_dir+'/*') if data_dir is not None else []
         self.anchors = pickle.load(open(anchor_path, "rb"))
         
         self.__collate_fn__ = data_collate_fn
@@ -96,6 +96,7 @@ class WaymaxDataset(Dataset):
             data = pickle.load(f)
         return self.gen_tensor(data)
 
+
 class WaymaxTestDataset(WaymaxDataset):
     """
     Test dataset class for Waymax data.
@@ -127,7 +128,7 @@ class WaymaxTestDataset(WaymaxDataset):
         self.history_length = history_length
         self.num_points_polyline = num_points_polyline
         
-        self.base_path =  os.path.dirname(os.path.abspath(self.data_list[0]))
+        self.base_path = os.path.dirname(os.path.abspath(self.data_list[0])) if len(self.data_list) > 0 else None
                 
     def process_scenario(self, scenario_raw, current_index: int = 10,
                         use_log: bool = True, selected_agents=None,

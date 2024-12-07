@@ -8,7 +8,7 @@ from torch.nn.functional import smooth_l1_loss, cross_entropy
 
 class VBD(pl.LightningModule):
     """
-    Versertile prior-guided diffusion model.
+    Versertile Behavior Diffusion model.
     """
 
     def __init__(
@@ -16,7 +16,7 @@ class VBD(pl.LightningModule):
         cfg: dict,
     ):
         """
-        Initialize the VPD model.
+        Initialize the VBD model.
 
         Args:
             cfg (dict): Configuration parameters for the model.
@@ -135,7 +135,7 @@ class VBD(pl.LightningModule):
         
     def forward(self, inputs, noised_actions_normalized, diffusion_step):
         """
-        Forward pass of the VPD model.
+        Forward pass of the VBD model.
 
         Args:
             inputs: Input data.
@@ -282,6 +282,7 @@ class VBD(pl.LightningModule):
                 diffusion_steps#, .reshape(B*A),
             )#.reshape(B, A, T, D)
             # noise = noise.reshape(B, A, T, D)
+
             if self._replay_buffer:
                 with torch.no_grad():
                     # Forward for one step
@@ -326,11 +327,9 @@ class VBD(pl.LightningModule):
                 log_dict.update({
                     prefix+'state_loss': state_loss_mean.item(),
                     prefix+'yaw_loss': yaw_loss_mean.item(),
-                    prefix+'diffusion_loss': diffusion_loss.item(),
-                    # 'time_step': diffusion_steps.detach(),
-                    # 'noise' : noise.detach(),
-                    # 'noise_pred' : noise_pred.detach(),
+                    prefix+'diffusion_loss': diffusion_loss.item()
                 })
+
             elif self._prediction_type == 'error':
                 denoiser_output = denoise_outputs['denoiser_output']
                 denoise_loss = torch.nn.functional.mse_loss(
@@ -340,6 +339,7 @@ class VBD(pl.LightningModule):
                 log_dict.update({
                     prefix+'diffusion_loss': denoise_loss.item(),
                 })
+
             elif self._prediction_type == 'mean':
                 pred_action_normalized = denoise_outputs['denoised_actions_normalized']
                 denoise_loss = self.action_loss(
@@ -378,7 +378,7 @@ class VBD(pl.LightningModule):
             )
 
             pred_loss = goal_loss_mean + 0.05 * score_loss_mean
-            total_loss += 1.0 * pred_loss #!ZZX: 50 (0.5) is the original weight
+            total_loss += 1.0 * pred_loss 
             
             pred_ade, pred_fde = self.calculate_metrics_predict(
                 goal_trajs, agents_future, agents_future_valid, agents_interested, 8
@@ -408,18 +408,7 @@ class VBD(pl.LightningModule):
 
         Returns:
             loss: Loss value.
-        """
-        # print("******************* training_step")
-        
-        # Add random mask to the history for dropout
-        # history_original = batch['agents_history']
-        # B, A, T, C = history_original.shape
-        # history_mask = torch.rand(B, A) < 0.5
-        # history_mask = history_mask[:, :, None, None].repeat(1, 1, T, C)
-        # history_mask[:, :, -1, :] = 1
-        # history_mask = history_mask.type_as(history_original)
-        # batch['agents_history'] = history_original * history_mask
-        
+        """        
         loss, log_dict = self.forward_and_get_loss(batch, prefix='train/')
         self.log_dict(
             log_dict, 

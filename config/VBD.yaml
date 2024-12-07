@@ -1,16 +1,16 @@
 model_name: VBD
 
 # Data Config
-train_data_path: /u/zixuz/vbd/data_extract/training_processed
-val_data_path:  /u/zixuz/vbd/data_extract/validation_processed
-anchor_path: /u/zixuz/vbd/diffusion_waymax/vbd/data/cluster_64_center_dict.pkl
-log_dir: /u/zixuz/vbd/ablation_results
+train_data_path: /home/zhiyu/Projects/Project12/release/VBD/data/processed
+val_data_path: /home/zhiyu/Projects/Project12/release/VBD/data/processed
+anchor_path: ./vbd/data/cluster_64_center_dict.pkl
+log_dir: ./train_log
 
 
 # Wandb Config
-use_wandb: True
-username: zzx9636
-project: VBD
+use_wandb: False
+username: null
+project: null
 
 # Checkpoint Config
 init_from: null
@@ -21,7 +21,7 @@ future_len: 80
 action_len: 2
 encoder_layers: 6
 prediction_type: sample
-encoder_version: v2
+encoder_version: v2 # v1: GRU, v2: MLP
 
 # Diffusion Params
 diffusion_steps: 50
@@ -35,7 +35,8 @@ action_std: [1.0, 0.15]
 clamp_value: 5.0
 
 # Training Params
-batch_size: 6
+seed: 42
+batch_size: 2
 num_workers: 16
 lr: 0.0002
 weight_decay: 0.01
