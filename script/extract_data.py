@@ -13,12 +13,17 @@ import glob
 import argparse
 import pickle
 from vbd.data.data_utils import *
-from tqdm import tqdm
-from tqdm.contrib.concurrent import process_map  # or thread_map
+from tqdm.auto import tqdm
+
+# 禁用其他导入中的警告
+import warnings
+warnings.filterwarnings('ignore')
 
 from waymax import dataloader
 from waymax.config import DataFormat
 import functools
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from multiprocessing import get_context
 
 MAX_NUM_OBJECTS = 64
 MAX_POLYLINES = 256
@@ -40,13 +45,16 @@ def data_process(
         save_dir (str): Directory path to save the processed data.
         save_raw (bool, optional): Whether to save the raw scenario data. Defaults to False.
     """
+    # 确保在每个进程中设置为CPU模式
+    import jax
+    jax.config.update('jax_platform_name', 'cpu')
+
     # Waymax Dataset
     tf_dataset = dataloader.tf_examples_dataset(
         path=data_dir,
         data_format=DataFormat.TFRECORD,
         preprocess_fn=tf_preprocess,
         repeat=1,
-        # num_shards=16,
         deterministic=True,
     )
     
@@ -123,8 +131,24 @@ if __name__ == '__main__':
             save_raw=save_raw,
             only_raw=only_raw,
         )
-        process_map(data_process_partial, data_files, max_workers=args.num_workers)
+
+        # 使用 ProcessPoolExecutor 并设置初始化函数和环境
+        def initializer():
+            import os
+            os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+            import jax
+            jax.config.update('jax_platform_name', 'cpu')
+
+        with ProcessPoolExecutor(
+            max_workers=args.num_workers,
+            mp_context=get_context('spawn'),  # 使用 spawn 上下文启动多进程
+            initializer=initializer,  # 初始化函数
+        ) as executor:
+            futures = []
+            for data_file in data_files:
+                futures.append(executor.submit(data_process_partial, data_file))
+
+            for future in tqdm(as_completed(futures), total=len(futures)):
+                future.result()
         
     process(save_raw=args.save_raw, only_raw=args.only_raw)
-  
-            
