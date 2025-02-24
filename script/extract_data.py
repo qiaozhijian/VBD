@@ -92,6 +92,13 @@ def data_process(
             pickle.dump(data_dict, f)
         
 
+def initializer():
+    """Initializer function for ProcessPoolExecutor."""
+    import os
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    import jax
+    jax.config.update('jax_platform_name', 'cpu')
+
 if __name__ == '__main__': 
     # add arguments
     parser = argparse.ArgumentParser()
@@ -133,12 +140,6 @@ if __name__ == '__main__':
         )
 
         # 使用 ProcessPoolExecutor 并设置初始化函数和环境
-        def initializer():
-            import os
-            os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-            import jax
-            jax.config.update('jax_platform_name', 'cpu')
-
         with ProcessPoolExecutor(
             max_workers=args.num_workers,
             mp_context=get_context('spawn'),  # 使用 spawn 上下文启动多进程
